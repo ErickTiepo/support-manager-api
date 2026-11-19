@@ -1,6 +1,6 @@
 package br.com.supportmanager.api.enums;
 
-public enum SentimentType {
+public enum TipoSentimento {
     POSITIVO,
     NEUTRO,
     NEGATIVO,

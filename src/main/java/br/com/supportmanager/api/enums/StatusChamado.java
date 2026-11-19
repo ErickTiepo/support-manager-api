@@ -1,6 +1,6 @@
 package br.com.supportmanager.api.enums;
 
-public enum TicketStatus {
+public enum StatusChamado {
     RECEBIDO,
     RESPONDIDO_IA,
     CRITICO_PENDENTE,
