@@ -19,6 +19,7 @@ public class LeitorXmlNotaFiscal {
     public DadosNotaFiscalDTO ler(InputStream xmlStream) {
         try {
             DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+            factory.setNamespaceAware(true);
             factory.setFeature("http://apache.org/xml/features/disallow-doctype-decl", true);
             factory.setFeature("http://xml.org/sax/features/external-general-entities", false);
             factory.setFeature("http://xml.org/sax/features/external-parameter-entities", false);
@@ -29,6 +30,9 @@ public class LeitorXmlNotaFiscal {
             doc.getDocumentElement().normalize();
 
             String chaveAcesso = extrairChaveAcesso(doc);
+            if (chaveAcesso == null || chaveAcesso.length() != 44) {
+                throw new IllegalArgumentException("Chave de acesso da NF-e invalida ou ausente.");
+            }
             String numeroNota = extrairTag(doc, "nNF");
             String serie = extrairTag(doc, "serie");
             String cnpjEmitente = extrairTagDeGrupo(doc, "emit", "CNPJ");
@@ -51,7 +55,7 @@ public class LeitorXmlNotaFiscal {
     }
 
     private String extrairChaveAcesso(Document doc) {
-        NodeList nodes = doc.getElementsByTagName("infNFe");
+        NodeList nodes = doc.getElementsByTagNameNS("*", "infNFe");
         if (nodes.getLength() > 0 && nodes.item(0) instanceof Element infNFe) {
             String id = infNFe.getAttribute("Id");
             if (id != null && id.startsWith("NFe")) {
@@ -62,9 +66,9 @@ public class LeitorXmlNotaFiscal {
     }
 
     private String extrairTagDeGrupo(Document doc, String grupo, String tag) {
-        NodeList grupoNodes = doc.getElementsByTagName(grupo);
+        NodeList grupoNodes = doc.getElementsByTagNameNS("*", grupo);
         if (grupoNodes.getLength() > 0 && grupoNodes.item(0) instanceof Element elemento) {
-            NodeList tagNodes = elemento.getElementsByTagName(tag);
+            NodeList tagNodes = elemento.getElementsByTagNameNS("*", tag);
             if (tagNodes.getLength() > 0) {
                 return tagNodes.item(0).getTextContent().trim();
             }
@@ -73,7 +77,7 @@ public class LeitorXmlNotaFiscal {
     }
 
     private String extrairTag(Document doc, String tagName) {
-        NodeList nodes = doc.getElementsByTagName(tagName);
+        NodeList nodes = doc.getElementsByTagNameNS("*", tagName);
         if (nodes.getLength() > 0) {
             return nodes.item(0).getTextContent().trim();
         }

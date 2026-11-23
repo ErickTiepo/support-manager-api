@@ -71,4 +71,49 @@ class LeitorXmlNotaFiscalTest {
 
         assertThrows(IllegalArgumentException.class, () -> leitor.ler(stream));
     }
+    @Test
+    void deveLerXmlComNamespaceOficialSefaz() {
+        String xmlComNamespace = """
+                <?xml version="1.0" encoding="UTF-8"?>
+                <nfeProc xmlns="http://www.portalfiscal.inf.br/nfe" versao="4.00">
+                    <NFe xmlns="http://www.portalfiscal.inf.br/nfe">
+                        <infNFe Id="NFe41261112345678000199550010000012341000012345" versao="4.00">
+                            <ide>
+                                <nNF>9876</nNF>
+                                <serie>2</serie>
+                            </ide>
+                            <emit>
+                                <CNPJ>12345678000199</CNPJ>
+                                <xNome>FORNECEDOR COM NAMESPACE LTDA</xNome>
+                            </emit>
+                        </infNFe>
+                    </NFe>
+                </nfeProc>
+                """;
+
+        var stream = new ByteArrayInputStream(xmlComNamespace.getBytes(StandardCharsets.UTF_8));
+        DadosNotaFiscalDTO dados = leitor.ler(stream);
+
+        assertEquals("41261112345678000199550010000012341000012345", dados.chaveAcesso());
+        assertEquals("9876", dados.numeroNota());
+        assertEquals("FORNECEDOR COM NAMESPACE LTDA", dados.nomeEmitente());
+    }
+
+    @Test
+    void deveRejeitarXmlSemChaveDeAcessoValida() {
+        String xmlSemChave = """
+                <?xml version="1.0" encoding="UTF-8"?>
+                <nfeProc>
+                    <NFe>
+                        <infNFe Id="NFe123">
+                            <ide><nNF>1</nNF></ide>
+                        </infNFe>
+                    </NFe>
+                </nfeProc>
+                """;
+
+        var stream = new ByteArrayInputStream(xmlSemChave.getBytes(StandardCharsets.UTF_8));
+
+        assertThrows(IllegalArgumentException.class, () -> leitor.ler(stream));
+    }
 }
